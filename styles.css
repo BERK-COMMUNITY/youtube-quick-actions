@@ -1,0 +1,19 @@
+.quick-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.quick-action-btn {
+  background: transparent;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  padding: 4px 8px;
+  color: #fff;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.quick-action-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}

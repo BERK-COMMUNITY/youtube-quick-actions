@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "YouTube Quick Actions",
+  "version": "1.0",
+  "description": "Adds quick action buttons for 'Not interested' and 'Don't recommend channel' on YouTube videos",
+  "author": "Trallka",
+  "permissions": [
+    "activeTab"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["*://*.youtube.com/*"],
+      "js": ["content.js"],
+      "css": ["styles.css"]
+    }
+  ]
+}
