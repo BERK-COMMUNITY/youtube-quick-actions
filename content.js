@@ -1,38 +1,34 @@
 const ACTIONS = {
   notInterested: {
-    id: 'notInterested',
     labels: ['Не интересует', 'Not interested'],
     buttonText: 'Не интересно'
   },
   dontRecommend: {
-    id: 'dontRecommend',
-    labels: ['Не рекомендовать видео с этого канала', 'Don\'t recommend channel'],
+    labels: ['Не рекомендовать видео с этого канала', "Don't recommend channel"],
     buttonText: 'Не рекомендовать канал'
   }
+};
+
+const SELECTORS = {
+  videoItems: 'ytd-rich-item-renderer, ytd-compact-video-renderer, ytd-video-renderer',
+  menuButton: '.yt-lockup-metadata-view-model-wiz__menu-button button',
+  menuItems: 'tp-yt-iron-dropdown yt-list-item-view-model',
+  metaData: 'yt-content-metadata-view-model',
+  quickActions: '.quick-actions'
 };
 
 class YouTubeQuickActions {
 
   constructor() {
-    this.observePageChanges();
     this.initializeActions();
+    this.observePageChanges();
   }
 
   initializeActions() {
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.addQuickActions());
-    } else {
-      this.addQuickActions();
-    }
 
-    // Обработка прокрутки с debounce
-    this.setupScrollHandler();
-  }
-
-  setupScrollHandler() {
+    this.addQuickActions();
 
     let scrollTimeout;
-
     window.addEventListener('scroll', () => {
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => this.addQuickActions(), 100);
@@ -42,76 +38,49 @@ class YouTubeQuickActions {
 
   observePageChanges() {
 
-    const observer = new MutationObserver(() => {
+    new MutationObserver(() => {
       setTimeout(() => this.addQuickActions(), 100);
-    });
-
-    observer.observe(document.body, {
+    }).observe(document.body, {
       childList: true,
       subtree: true
     });
 
   }
 
-  clickMenuItem(menuItems, action) {
-
-    return action.labels.some(label => {
-
-      const item = Array.from(menuItems).find(item =>
-          item.textContent.includes(label)
-      );
-
-      if (item) {
-        item.click();
-        return true;
-      }
-
-      return false;
-    });
-
-  }
-
-  handleAction(menuButton, actionType) {
+  handleAction(menuButton, action) {
 
     menuButton.click();
 
     setTimeout(() => {
 
-      const menuItems = document.querySelectorAll('ytd-menu-service-item-renderer, tp-yt-paper-item');
-      const action = ACTIONS[actionType];
+      const menuItems = document.querySelectorAll(SELECTORS.menuItems);
 
-      if (action) {
-        this.clickMenuItem(menuItems, action);
+      for (const label of action.labels) {
+
+        const item = Array.from(menuItems).find(item =>
+            item.textContent.includes(label)
+        );
+
+        if (item) {
+          item.click();
+          break;
+        }
+
       }
 
-    }, 150);
+    }, 100);
 
-  }
-
-  createActionButton(action, menuButton) {
-
-    const button = document.createElement('button');
-
-    button.className = 'quick-action-btn';
-    button.textContent = action.buttonText;
-    button.onclick = (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.handleAction(menuButton, action.id);
-    };
-
-    return button;
   }
 
   addQuickActions() {
 
-    const videoItems = document.querySelectorAll('ytd-rich-item-renderer, ytd-compact-video-renderer, ytd-video-renderer');
+    const videoItems = document.querySelectorAll(SELECTORS.videoItems);
 
     videoItems.forEach(item => {
 
-      if (item.querySelector('.quick-actions')) return;
+      if (item.querySelector(SELECTORS.quickActions)) return;
 
-      const menuButton = item.querySelector('#menu button[aria-label]');
+      const menuButton = item.querySelector(SELECTORS.menuButton);
 
       if (!menuButton) return;
 
@@ -119,13 +88,23 @@ class YouTubeQuickActions {
 
       actionsContainer.className = 'quick-actions';
 
-      // Создаем кнопки для каждого действия
       Object.values(ACTIONS).forEach(action => {
-        const actionButton = this.createActionButton(action, menuButton);
-        actionsContainer.appendChild(actionButton);
+
+        const button = document.createElement('button');
+
+        button.className = 'quick-action-btn';
+        button.textContent = action.buttonText;
+        button.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.handleAction(menuButton, action);
+        };
+
+        actionsContainer.appendChild(button);
+
       });
 
-      const metaData = item.querySelector('#metadata-line');
+      const metaData = item.querySelector(SELECTORS.metaData);
 
       if (metaData) {
         metaData.parentNode.insertBefore(actionsContainer, metaData.nextSibling);
@@ -134,7 +113,7 @@ class YouTubeQuickActions {
     });
 
   }
-
+  
 }
 
 new YouTubeQuickActions();
